@@ -14,13 +14,14 @@ export const cache = {
     },
 
     /* A function that takes a string as a parameter and returns a string. */
-    get (name: string): string {
+    get (name: string): string | null {
         for (const entry in localStorage) {
             if (entry.includes(`${this._preffix}::${name}`)) {
                 return localStorage.getItem(entry)!
             }
         }
-        throw new Error(`[localStorage] Unkwon name "${name}"`)
+        // throw new Error(`[localStorage] Unkwon name "${name}"`)
+        return null
     },
 
     /**
@@ -105,6 +106,10 @@ export function injectCompiled(js: string): HTMLScriptElement {
  */
 export async function getConfig(): Promise<Config | null> {
     const config = document.querySelector<HTMLScriptElement>('script[data-model="swc-transpiler-config"]')
-    const json = config?.textContent ?? await (await fetch(config?.src ?? '')).text()
-    return json as Config
+    try {
+        const json = JSON.parse(config?.textContent ?? '') ?? await (await fetch(config?.src ?? '')).json()
+        return json as Config
+    } catch {
+        return null
+    }
 }

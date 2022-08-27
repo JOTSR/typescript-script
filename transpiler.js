@@ -346,7 +346,8 @@ const allowedMimeTypes = [
     'text/typescript',
     'application/typescript',
     'text/x-typescript',
-    'application/x-typescript'
+    'application/x-typescript',
+    'video/mp2t'
 ];
 const cache = {
     _preffix: 'ts-script-tag',
@@ -359,7 +360,7 @@ const cache = {
                 return localStorage.getItem(entry);
             }
         }
-        throw new Error(`[localStorage] Unkwon name "${name}"`);
+        return null;
     },
     clean (lifetime = 30) {
         const now = Date.now();
@@ -410,8 +411,12 @@ function injectCompiled(js) {
 }
 async function getConfig() {
     const config = document.querySelector('script[data-model="swc-transpiler-config"]');
-    const json = config?.textContent ?? await (await fetch(config?.src ?? '')).text();
-    return json;
+    try {
+        const json = JSON.parse(config?.textContent ?? '') ?? await (await fetch(config?.src ?? '')).json();
+        return json;
+    } catch  {
+        return null;
+    }
 }
 const scripts = document.querySelectorAll('script');
 const config = await getConfig() ?? {
@@ -430,8 +435,10 @@ const config = await getConfig() ?? {
 const configEtag = hashCode(JSON.stringify(config));
 cache.clean();
 for (const script of scripts){
-    const { data , eTag  } = await getContent(script);
-    const compiled = compileAndCache(data, eTag + configEtag, config);
-    const jsBalise = injectCompiled(compiled);
-    document.body.appendChild(jsBalise);
+    try {
+        const { data , eTag  } = await getContent(script);
+        const compiled = compileAndCache(data, eTag + configEtag, config);
+        const jsBalise = injectCompiled(compiled);
+        document.body.appendChild(jsBalise);
+    } catch  {}
 }
