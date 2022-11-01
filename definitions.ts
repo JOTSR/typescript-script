@@ -45,13 +45,23 @@ export const cache = {
  * @param {HTMLScriptElement} script - The script element to get the content of.
  * @returns An object with two properties: data and eTag.
  */
-export async function getContent(script: HTMLScriptElement): Promise<{data: string, eTag: string}> {
-    if (!allowedMimeTypes.includes(script.type)) throw new TypeError(`Incorrect mime type for ${script}`)
+export async function getContent(script: HTMLScriptElement): Promise<{data: string, eTag: string, module: boolean}> {
+    if (!isTypescript(script)) throw new TypeError(`Incorrect mime type for ${script}`)
+    const module = (script.dataset?.type ?? '') === 'module'
+    const { data, eTag } = await getRawText(script)
+    return { data, eTag, module }
+}
+
+/**
+ * It fetches the script's source if it's not inline, and returns the text content and the ETag
+ * @param {HTMLScriptElement} script - The script element to get the raw text from.
+ * @returns An object with two properties: data and eTag.
+ */
+async function getRawText(script: HTMLScriptElement): Promise<{ data: string, eTag: string }> {
     if (script.textContent !== '') return { data: script.textContent!, eTag: hashCode(script.textContent!) }
     const fetched = await fetch(script.src)
-    if (!allowedMimeTypes.includes(fetched.headers.get('Content-Type') ?? '')) throw new TypeError(`Incorrect mime type for ${fetched}`)
     const text = await fetched.text()
-    return { data: text, eTag: fetched.headers.get('ETag') ?? hashCode(text)}
+    return { data: text, eTag: fetched.headers.get('ETag') ?? hashCode(text) }
 }
 
 /**
@@ -93,10 +103,10 @@ export function hashCode(string: string): string {
  * @param {string} js - The compiled JavaScript code.
  * @returns A function that takes a string and returns a script element.
  */
-export function injectCompiled(js: string): HTMLScriptElement {
+export function injectCompiled(js: string, module: boolean): HTMLScriptElement {
     const script = document.createElement('script')
     script.textContent = `/* Compiled locally */ ${js}`
-    script.type = 'application/javascript'
+    script.type = module ? 'module' : 'application/javascript'
     return script
 }
 

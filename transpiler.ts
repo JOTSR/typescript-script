@@ -23,12 +23,12 @@ cache.clean()
 for (const script of scripts) {
     if (!await isTypescript(script)) continue
     try {
-        const { data, eTag } = await getContent(script)
+        const { data, eTag, module } = await getContent(script)
         const compiled = compileAndCache(data, eTag + configEtag, config)
-        const jsBalise = injectCompiled(compiled)
+        const jsBalise = injectCompiled(compiled, module)
         document.body.appendChild(jsBalise)
-    } catch {
+    } catch (e) {
         //Unresolved script
-        console.warn(`script ${script.src} was not transpiled`)
+        console.warn(`script ${script.src} was not transpiled, { cause: ${e} }`)
     }
 }
