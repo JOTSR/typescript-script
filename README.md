@@ -5,11 +5,11 @@ Inspired by https://github.com/basarat/typescript-script
 ## Usage
 Add the following line in your page: 
 ```html
-<script src="https://raw.githubusercontent.com/JOTSR/typescript-script/1.0.0/transpiler.js" type="module"></script>
+<script src="https://raw.githubusercontent.com/JOTSR/typescript-script/1.0.1/transpiler.js" type="module"></script>
 ```
 Or import it in a js file:
 ```js
-import 'https://raw.githubusercontent.com/JOTSR/typescript-script/1.0.0/transpiler.js'
+import 'https://raw.githubusercontent.com/JOTSR/typescript-script/1.0.1/transpiler.js'
 ```
 
 Set data-type to "module" to set transpiled script type to module.
