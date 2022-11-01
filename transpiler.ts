@@ -28,5 +28,6 @@ for (const script of scripts) {
         document.body.appendChild(jsBalise)
     } catch {
         //Unresolved script
+        console.warn(`script ${script.src} was not transpiled`)
     }
 }
