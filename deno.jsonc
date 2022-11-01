@@ -9,6 +9,7 @@
 		]
 	},
 	"tasks": {
-		"build": "deno bundle ./transpiler.ts ./transpiler.js"
+		"build:dev": "deno run -A --watch ./bundle.ts --dev",
+		"build": "deno run -A ./bundle.ts"
 	}
 }
