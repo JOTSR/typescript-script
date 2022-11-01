@@ -126,6 +126,7 @@ export async function isTypescript(script: HTMLScriptElement): Promise<boolean> 
         if (allowedMimeTypes.includes(script.type)) return true
         if (script.src.match(RegExp(`^data:(${allowedMimeTypes.join('|')})`)) || script.src.endsWith('.ts')) return true
         if (allowedMimeTypes.includes((await fetch(script.src)).headers.get('content-type') ?? '')) return true
+        if (allowedMimeTypes.includes((await fetch(script.src)).headers.get('Content-Type') ?? '')) return true
     } catch {
         return false
     }
