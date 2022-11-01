@@ -1,4 +1,4 @@
-import { cache, compileAndCache, Config, getConfig, getContent, hashCode, injectCompiled } from './definitions.ts'
+import { cache, compileAndCache, Config, getConfig, getContent, hashCode, injectCompiled, isTypescript } from './definitions.ts'
 
 const scripts = document.querySelectorAll<HTMLScriptElement>('script')
 
@@ -21,6 +21,7 @@ const configEtag = hashCode(JSON.stringify(config))
 cache.clean()
 
 for (const script of scripts) {
+    if (!await isTypescript(script)) continue
     try {
         const { data, eTag } = await getContent(script)
         const compiled = compileAndCache(data, eTag + configEtag, config)

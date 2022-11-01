@@ -3,7 +3,7 @@ import { transform } from 'https://deno.land/x/swc@0.2.1/mod.ts'
 
 export type { Config }
 
-const allowedMimeTypes = ['text/typescript', 'application/typescript', 'text/x-typescript', 'application/x-typescript']
+const allowedMimeTypes = ['text/typescript', 'application/typescript', 'text/x-typescript', 'application/x-typescript', 'video/mp2t']
 
 export const cache = {
     _preffix: 'ts-script-tag',
@@ -46,7 +46,7 @@ export const cache = {
  * @returns An object with two properties: data and eTag.
  */
 export async function getContent(script: HTMLScriptElement): Promise<{data: string, eTag: string}> {
-    if (script.type !== '' && !allowedMimeTypes.includes(script.type)) throw new TypeError(`Incorrect mime type for ${script}`)
+    if (!allowedMimeTypes.includes(script.type)) throw new TypeError(`Incorrect mime type for ${script}`)
     if (script.textContent !== '') return { data: script.textContent!, eTag: hashCode(script.textContent!) }
     const fetched = await fetch(script.src)
     if (!allowedMimeTypes.includes(fetched.headers.get('Content-Type') ?? '')) throw new TypeError(`Incorrect mime type for ${fetched}`)
@@ -112,4 +112,22 @@ export async function getConfig(): Promise<Config | null> {
     } catch {
         return null
     }
+}
+
+/**
+ * It checks if the script is a typescript code, if it has a valid mime type, if it has a valid data URI, or
+ * if it has a valid file extension
+ * @param {HTMLScriptElement} script - The script element to check
+ * @returns A function that returns a promise that resolves to a boolean.
+ */
+export async function isTypescript(script: HTMLScriptElement): Promise<boolean> {
+    try {
+        if (script.tagName !== 'SCRIPT') return false
+        if (allowedMimeTypes.includes(script.type)) return true
+        if (script.src.match(RegExp(`^data:(${allowedMimeTypes.join('|')})`)) || script.src.endsWith('.ts')) return true
+        if (allowedMimeTypes.includes((await fetch(script.src)).headers.get('content-type') ?? '')) return true
+    } catch {
+        return false
+    }
+    return false
 }
